@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Wali Santri - Rumah Tahfidz Al Arba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 shadow-md flex justify-between items-center">
+        <div>
+            <h1 class="text-base font-extrabold">Portal Wali Santri</h1>
+            <p class="text-xs text-slate-300">Rumah Tahfidz Al Arba</p>
+        </div>
+        <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold">
+            Keluar
+        </button>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 w-full space-y-4">
+        <!-- PROFIL SANTRI -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-xl font-extrabold text-slate-900" id="santri-nama">Memuat...</h2>
+            <p class="text-xs text-slate-500" id="santri-info">-</p>
+        </div>
+
+        <!-- LOG MUTABAAH -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h3 class="font-extrabold text-sm text-slate-900">Riwayat Setoran Hafalan</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border">
+                    <thead class="bg-slate-800 text-white">
+                        <tr>
+                            <th class="p-2 border">Tanggal</th>
+                            <th class="p-2 border">Capaian</th>
+                            <th class="p-2 border">Kelancaran</th>
+                            <th class="p-2 border">Catatan Ustaz</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mutabaah-body">
+                        <tr><td colspan="4" class="p-3 text-center text-slate-400">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let relasiId = new URLSearchParams(window.location.search).get('u') || '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            google.script.run.withSuccessHandler(data => {
+                if (data && data.length > 0) {
+                    document.getElementById('santri-nama').innerText = data[0].nama;
+                    document.getElementById('santri-info').innerText = `ID: ${data[0].id} | Kelas: ${data[0].kelas} | Status: ${data[0].status}`;
+                }
+            }).getSantriData(relasiId, 'Wali/Santri');
+
+            google.script.run.withSuccessHandler(logs => {
+                const tbody = document.getElementById('mutabaah-body');
+                tbody.innerHTML = '';
+                if (!logs || logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">Belum ada data setoran.</td></tr>';
+                    return;
+                }
+                logs.forEach(l => {
+                    tbody.innerHTML += `<tr>
+                        <td class="p-2 border">${l.tanggal}</td>
+                        <td class="p-2 border font-bold">${l.capaian}</td>
+                        <td class="p-2 border">${l.kelancaran}</td>
+                        <td class="p-2 border italic">${l.catatan}</td>
+                    </tr>`;
+                });
+            }).getMutabaahLogs(relasiId, 'Wali/Santri');
+        });
+
+        function handleLogout() {
+            sessionStorage.removeItem('userSession');
+            let baseUrl = window.location.href.split('?')[0];
+            window.location.href = baseUrl + "?page=Homepage";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Guru - Rumah Tahfidz Al Arba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div>
+            <h1 class="text-base font-extrabold">Portal Guru & Pengajar</h1>
+            <p class="text-xs text-slate-300">Input Setoran & Absensi Santri</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="goToRapor()" class="bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Input Rapor</button>
+            <button onclick="handleLogout()" class="bg-rose-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Keluar</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 w-full grid grid-cols-1 md:grid-cols-12 gap-6">
+        <!-- FORM INPUT MUTABAAH -->
+        <div class="md:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h3 class="font-extrabold text-sm text-slate-900 border-b pb-2">Input Setoran Hafalan Baru</h3>
+            <div id="alert-box" class="hidden p-2 text-xs rounded font-semibold bg-emerald-50 text-emerald-800"></div>
+            <form onsubmit="simpanMutabaah(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold mb-1">Tanggal</label>
+                    <input type="date" id="m-tgl" required class="w-full px-3 py-2 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Pilih Santri</label>
+                    <select id="m-santri" required class="w-full px-3 py-2 border rounded-xl">
+                        <option value="">-- Memuat Santri --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Capaian Hafalan</label>
+                    <input type="text" id="m-capaian" placeholder="Contoh: Juz 30 / An-Naba 1-15" required class="w-full px-3 py-2 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Kelancaran</label>
+                    <select id="m-kelancaran" class="w-full px-3 py-2 border rounded-xl">
+                        <option value="Mumtaz (Lancar)">Mumtaz (Lancar)</option>
+                        <option value="Jayyid (Cukup)">Jayyid (Cukup)</option>
+                        <option value="Muraja'ah">Muraja'ah</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Catatan</label>
+                    <textarea id="m-catatan" class="w-full px-3 py-2 border rounded-xl" rows="2"></textarea>
+                </div>
+                <button type="submit" id="btn-save" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl">Simpan Setoran</button>
+            </form>
+        </div>
+
+        <!-- REKAP LOG -->
+        <div class="md:col-span-7 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h3 class="font-extrabold text-sm text-slate-900 border-b pb-2">Log Setoran Terakhir</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border">
+                    <thead class="bg-slate-800 text-white">
+                        <tr>
+                            <th class="p-2 border">Tanggal</th>
+                            <th class="p-2 border">Nama</th>
+                            <th class="p-2 border">Capaian</th>
+                            <th class="p-2 border">Kelancaran</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guru-log-body">
+                        <tr><td colspan="4" class="p-3 text-center text-slate-400">Memuat log...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('m-tgl').valueAsDate = new Date();
+            google.script.run.withSuccessHandler(list => {
+                const sel = document.getElementById('m-santri');
+                sel.innerHTML = '<option value="">-- Pilih Santri --</option>';
+                list.forEach(s => sel.innerHTML += `<option value="${s.nama}">${s.nama} (${s.kelas})</option>`);
+            }).getSantriData('', 'Guru/Pengajar');
+
+            loadLogs();
+        });
+
+        function simpanMutabaah(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true;
+            btn.innerText = "Menyimpan...";
+
+            const payload = {
+                tanggal: document.getElementById('m-tgl').value,
+                nama: document.getElementById('m-santri').value,
+                capaian: document.getElementById('m-capaian').value,
+                kelancaran: document.getElementById('m-kelancaran').value,
+                catatan: document.getElementById('m-catatan').value
+            };
+
+            google.script.run.withSuccessHandler(res => {
+                btn.disabled = false;
+                btn.innerText = "Simpan Setoran";
+                const box = document.getElementById('alert-box');
+                box.innerText = res.message;
+                box.classList.remove('hidden');
+                document.getElementById('m-capaian').value = '';
+                loadLogs();
+            }).saveMutabaah(payload);
+        }
+
+        function loadLogs() {
+            google.script.run.withSuccessHandler(logs => {
+                const tbody = document.getElementById('guru-log-body');
+                tbody.innerHTML = '';
+                logs.slice(0, 10).forEach(l => {
+                    tbody.innerHTML += `<tr>
+                        <td class="p-2 border">${l.tanggal}</td>
+                        <td class="p-2 border font-bold">${l.nama}</td>
+                        <td class="p-2 border">${l.capaian}</td>
+                        <td class="p-2 border">${l.kelancaran}</td>
+                    </tr>`;
+                });
+            }).getMutabaahLogs('', 'Guru/Pengajar');
+        }
+
+        function goToRapor() {
+            let baseUrl = window.location.href.split('?')[0];
+            window.location.href = baseUrl + "?page=InputRapor";
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('userSession');
+            let baseUrl = window.location.href.split('?')[0];
+            window.location.href = baseUrl + "?page=Homepage";
+        }
+    </script>
+</body>
+</html>

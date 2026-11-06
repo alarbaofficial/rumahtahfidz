@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rumah Tahfidz Al Arba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        arba: { 50: '#f4f7fb', 100: '#e5ecf5', 200: '#cddceb', 500: '#6b93c4', 600: '#5278a9', 700: '#41618c', 800: '#2d4669', 900: '#1e304b' }
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- TOPBAR & NAVBAR -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-arba-50 p-1 flex items-center justify-center border border-arba-200">
+                    <i class="fa-solid fa-kaaba text-arba-800 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold text-arba-900 leading-tight">Rumah Tahfidz Al Arba</h1>
+                    <p class="text-[10px] text-slate-500 font-medium">Sistem Informasi & Aplikasi Santri</p>
+                </div>
+            </div>
+            <button onclick="openLoginModal()" class="bg-arba-800 hover:bg-arba-900 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-right-to-bracket text-arba-200"></i>
+                <span>Masuk Portal</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full space-y-12">
+        <section class="bg-gradient-to-br from-arba-900 via-arba-800 to-arba-900 text-white p-8 sm:p-12 rounded-3xl shadow-xl relative overflow-hidden">
+            <div class="max-w-2xl space-y-4">
+                <span class="px-3 py-1 bg-arba-500/20 text-arba-100 border border-arba-500/40 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                    Lembaga Pendidikan Al-Qur'an
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold leading-tight">Mewujudkan Generasi Qur'ani yang Bertakwa</h2>
+                <p class="text-xs sm:text-sm text-arba-200">Pendidikan Tahfizh Al-Qur’an, Tahsin, dan Kelancaran Pelafalan Huruf Harian bagi Santri.</p>
+                <button onclick="openLoginModal()" class="bg-arba-500 hover:bg-arba-600 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-md transition inline-flex items-center gap-2">
+                    <span>Masuk ke Portal Sistem</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL LOGIN -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-arba-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 p-6 relative">
+            <button onclick="closeLoginModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center mb-5">
+                <h3 class="text-lg font-extrabold text-arba-900">Masuk Portal Akses</h3>
+                <p class="text-xs text-slate-500">Masukkan ID Pengguna, Password, dan Peran Anda</p>
+            </div>
+            <div id="login-alert" class="hidden p-3 mb-3 rounded-xl text-xs font-semibold"></div>
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">ID Pengguna</label>
+                    <input type="text" id="login-username" required placeholder="Contoh: S-001 / G-001 / admin" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>
+                    <input type="password" id="login-password" required placeholder="Masukkan kata sandi" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Peran Akses (Role)</label>
+                    <select id="login-role" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
+                        <option value="">-- Pilih Peran Akses --</option>
+                        <option value="Wali/Santri">Wali / Santri</option>
+                        <option value="Guru/Pengajar">Guru / Pengajar</option>
+                        <option value="Admin">Admin / Pengelola</option>
+                    </select>
+                </div>
+                <button type="submit" id="btn-login-submit" class="w-full bg-arba-800 hover:bg-arba-900 text-white font-bold py-3 rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Masuk Ke Sistem</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login-submit');
+            const alertBox = document.getElementById('login-alert');
+
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const role = document.getElementById('login-role').value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
+            alertBox.classList.add('hidden');
+
+            google.script.run
+                .withSuccessHandler(res => {
+                    if (res.success) {
+                        sessionStorage.setItem('userSession', JSON.stringify(res.user));
+                        let baseUrl = window.location.href.split('?')[0];
+                        window.location.href = baseUrl + "?page=" + res.targetPage + "&u=" + encodeURIComponent(res.user.relasiId || '');
+                    } else {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                        alertBox.className = "p-3 mb-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                        alertBox.innerText = res.message;
+                    }
+                })
+                .withFailureHandler(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                    alertBox.className = "p-3 mb-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                    alertBox.innerText = "Error server: " + err.message;
+                })
+                .processLogin(username, password, role);
+        }
+    </script>
+</body>
+</html>

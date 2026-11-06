@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Nilai Rapor - Rumah Tahfidz Al Arba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div>
+            <h1 class="text-base font-extrabold">Form Input Nilai Rapor (26 Header)</h1>
+            <p class="text-xs text-slate-300">Sinkronisasi Otomatis ke Spreadsheet Rapor</p>
+        </div>
+        <button onclick="backToGuru()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">
+            Kembali ke Portal Guru
+        </button>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 w-full bg-white rounded-2xl shadow-sm border border-slate-200 mt-4 p-6 space-y-4">
+        <div id="rapor-alert" class="hidden p-3 text-xs font-bold rounded"></div>
+
+        <form onsubmit="handleRaporSubmit(event)" class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl">
+                <div>
+                    <label class="block font-bold mb-1">Pilih Santri</label>
+                    <select id="r-santri" onchange="onSantriChange()" required class="w-full p-2 border rounded-xl">
+                        <option value="">-- Memuat --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">ID Santri</label>
+                    <input type="text" id="r-id-santri" readonly class="w-full p-2 border rounded-xl bg-slate-100 font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Wali Kelas / Pengajar</label>
+                    <input type="text" id="r-wali-kelas" value="Eva Nurjanah, S.Si." required class="w-full p-2 border rounded-xl">
+                </div>
+            </div>
+
+            <!-- HALAQAH -->
+            <div class="space-y-2 border-t pt-3">
+                <h4 class="font-extrabold text-slate-900">A. Aspek Halaqah</h4>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-bold">Adab Mutu</label>
+                        <select id="r-adab" class="w-full p-2 border rounded-xl"><option value="A">A</option><option value="B" selected>B</option><option value="C">C</option></select>
+                    </div>
+                    <div>
+                        <label class="block font-bold">Murajaah Mutu</label>
+                        <select id="r-murajaah" class="w-full p-2 border rounded-xl"><option value="A">A</option><option value="B" selected>B</option><option value="C">C</option></select>
+                    </div>
+                    <div>
+                        <label class="block font-bold">Pelafalan Mutu</label>
+                        <select id="r-pelafalan" class="w-full p-2 border rounded-xl"><option value="A">A</option><option value="B" selected>B</option><option value="C">C</option></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAHFIZH & IQRO -->
+            <div class="space-y-2 border-t pt-3">
+                <h4 class="font-extrabold text-slate-900">B. Aspek Tahfizh & Iqra</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold">Iqra Harian (Capaian / Nilai)</label>
+                        <input type="text" id="r-iqra-h-c" placeholder="Jilid 2 hal 12" class="w-full p-2 border rounded-xl mb-1">
+                        <input type="number" id="r-iqra-h-n" placeholder="Nilai (0-100)" class="w-full p-2 border rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block font-bold">Ziyadah Hafalan (Capaian / Nilai)</label>
+                        <input type="text" id="r-ziyadah-c" placeholder="An-Naba 1-40" class="w-full p-2 border rounded-xl mb-1">
+                        <input type="number" id="r-ziyadah-n" placeholder="Nilai (0-100)" class="w-full p-2 border rounded-xl">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATATAN & MUDIR -->
+            <div class="space-y-2 border-t pt-3">
+                <h4 class="font-extrabold text-slate-900">C. Catatan Guru & Pengesahan</h4>
+                <textarea id="r-catatan-guru" rows="3" placeholder="Catatan narasi perkembangan santri..." class="w-full p-2 border rounded-xl"></textarea>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="r-mudir-nama" value="Eko Budi Aji Pangestu, S.Sos." class="p-2 border rounded-xl">
+                    <input type="text" id="r-mudir-niy" value="NIY. 01 0622 001" class="p-2 border rounded-xl">
+                </div>
+            </div>
+
+            <button type="submit" id="btn-save-rapor" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-md">
+                Simpan Permanen Nilai Rapor
+            </button>
+        </form>
+    </main>
+
+    <script>
+        let santriList = [];
+        document.addEventListener('DOMContentLoaded', () => {
+            google.script.run.withSuccessHandler(data => {
+                santriList = data || [];
+                const sel = document.getElementById('r-santri');
+                sel.innerHTML = '<option value="">-- Pilih Santri --</option>';
+                santriList.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.nama} (${s.kelas})</option>`);
+            }).getSantriData('', 'Guru/Pengajar');
+        });
+
+        function onSantriChange() {
+            document.getElementById('r-id-santri').value = document.getElementById('r-santri').value;
+        }
+
+        function handleRaporSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-rapor');
+            btn.disabled = true;
+            btn.innerText = "Menyimpan ke Spreadsheet...";
+
+            const payload = {
+                idRapor: 'RAP-' + Date.now(),
+                idSantri: document.getElementById('r-id-santri').value,
+                semester: '2 (Dua)',
+                tahunPelajaran: '2025/2026',
+                waliKelas: document.getElementById('r-wali-kelas').value,
+                adabMutu: document.getElementById('r-adab').value,
+                murajaahMutu: document.getElementById('r-murajaah').value,
+                pelafalanMutu: document.getElementById('r-pelafalan').value,
+                targetCapaian: 'Juz 30',
+                pencapaianReal: 'Juz 30',
+                iqraHarianCapaian: document.getElementById('r-iqra-h-c').value,
+                iqraHarianNilai: document.getElementById('r-iqra-h-n').value,
+                iqraHarianCatatan: '-',
+                iqraUjianCapaian: '-', iqraUjianNilai: 0, iqraUjianCatatan: '-',
+                ziyadahCapaian: document.getElementById('r-ziyadah-c').value,
+                ziyadahNilai: document.getElementById('r-ziyadah-n').value,
+                ziyadahCatatan: '-', murojaahNilai: 80, murojaahCatatan: '-',
+                nilaiDoa: 85, nilaiTauhid: 80,
+                catatanGuru: document.getElementById('r-catatan-guru').value,
+                mudirNama: document.getElementById('r-mudir-nama').value,
+                mudirNIY: document.getElementById('r-mudir-niy').value
+            };
+
+            google.script.run.withSuccessHandler(res => {
+                btn.disabled = false;
+                btn.innerText = "Simpan Permanen Nilai Rapor";
+                const box = document.getElementById('rapor-alert');
+                box.className = res.success ? "p-3 text-xs font-bold rounded bg-emerald-100 text-emerald-800 block" : "p-3 text-xs font-bold rounded bg-rose-100 text-rose-800 block";
+                box.innerText = res.message;
+            }).saveNilaiRapor(payload);
+        }
+
+        function backToGuru() {
+            let baseUrl = window.location.href.split('?')[0];
+            window.location.href = baseUrl + "?page=Guru";
+        }
+    </script>
+</body>
+</html>
