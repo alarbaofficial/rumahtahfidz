@@ -383,54 +383,69 @@
         }
 
         function handleLoginSubmit(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-login-submit');
-            const alertBox = document.getElementById('login-alert');
+    e.preventDefault();
+    const btn = document.getElementById('btn-login-submit');
+    const alertBox = document.getElementById('login-alert');
 
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-            const role = document.getElementById('login-role').value;
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    const role = document.getElementById('login-role').value;
 
-            if (!role) {
-                alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
-                alertBox.innerText = "Silakan pilih Peran Akses (Role) Anda terlebih dahulu.";
-                return;
-            }
+    if (!role) {
+        alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+        alertBox.innerText = "Silakan pilih Peran Akses (Role) Anda terlebih dahulu.";
+        return;
+    }
 
-            // Tampilkan indikator loading saat memproses
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
-            alertBox.classList.add('hidden');
+    // Ubah tombol ke status loading
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
+    alertBox.classList.add('hidden');
 
-            // Eksekusi fungsi backend Google Apps Script
-            google.script.run
-                .withSuccessHandler(res => {
-                    if (res.success) {
-                        // 1. Simpan sesi pengguna secara lokal
-                        sessionStorage.setItem('userSession', JSON.stringify(res.user));
-
-                        // 2. Tentukan URL dasar aplikasi
-                        let baseUrl = window.location.href.split('?')[0];
-
-                        // 3. Pengalihan instan sesuai target halaman & relasiId
-                        const targetUrl = baseUrl + "?page=" + res.targetPage + "&u=" + encodeURIComponent(res.user.relasiId || '');
-                        window.location.href = targetUrl;
-                    } else {
-                        // Kembalikan status tombol jika verifikasi gagal
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
-                        alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
-                        alertBox.innerText = res.message;
-                    }
-                })
-                .withFailureHandler(err => {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
-                    alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
-                    alertBox.innerText = "Gagal terhubung ke server: " + (err.message || err);
-                })
-                .processLogin(username, password, role);
+    // Proteksi Timeout: Reset tombol jika respon server melebihi 12 detik
+    const loginTimeout = setTimeout(() => {
+        if (btn.disabled) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+            alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+            alertBox.innerText = "Koneksi lambat atau waktu habis. Silakan coba klik tombol lagi.";
         }
+    }, 12000);
+
+    // Panggil Backend Google Apps Script
+    google.script.run
+        .withSuccessHandler(res => {
+            clearTimeout(loginTimeout); // Hentikan timer timeout
+            if (res.success) {
+                // 1. Simpan sesi pengguna
+                sessionStorage.setItem('userSession', JSON.stringify(res.user));
+
+                // 2. Dapatkan URL utama dari backend Google Apps Script
+                google.script.run.withSuccessHandler(baseUrl => {
+                    if (!baseUrl) {
+                        baseUrl = window.location.href.split('?')[0];
+                    }
+                    const targetUrl = baseUrl + "?page=" + res.targetPage + "&u=" + encodeURIComponent(res.user.relasiId || '');
+                    
+                    // 3. Paksa navigasi tingkat atas (Window Top Location)
+                    window.top.location.href = targetUrl;
+                }).getScriptUrl();
+
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                alertBox.innerText = res.message;
+            }
+        })
+        .withFailureHandler(err => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+            alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+            alertBox.innerText = "Gagal terhubung ke server: " + (err.message || err);
+        })
+        .processLogin(username, password, role);
+}
     </script>
 </body>
 </html>
