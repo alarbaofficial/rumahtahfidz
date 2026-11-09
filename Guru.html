@@ -3,140 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Guru - Rumah Tahfidz Al Arba</title>
+    <title>Portal Guru & Pengajar - Rumah Tahfidz Al Arba</title>
+    <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Konfigurasi Tema Warna Berdasarkan Logo (Dust Blue & Slate Palette) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        arba: {
+                            50: '#f4f7fb',
+                            100: '#e5ecf5',
+                            200: '#cddceb',
+                            300: '#a3bed8',
+                            400: '#7c9cc0', // Dust Blue Utama
+                            500: '#6b93c4',
+                            600: '#5278a9',
+                            700: '#41618c',
+                            800: '#2d4669', // Deep Navy
+                            900: '#1e304b'
+                        }
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-arba-400 selection:text-white">
 
-    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
-        <div>
-            <h1 class="text-base font-extrabold">Portal Guru & Pengajar</h1>
-            <p class="text-xs text-slate-300">Input Setoran & Absensi Santri</p>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="goToRapor()" class="bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Input Rapor</button>
-            <button onclick="handleLogout()" class="bg-rose-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Keluar</button>
+    <!-- HEADER NAVIGATION PORTAL GURU -->
+    <header class="bg-gradient-to-r from-arba-900 via-arba-800 to-arba-900 text-white shadow-xl sticky top-0 z-40 border-b border-arba-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- BRANDING LOGO & PORTAL -->
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-12 h-12 rounded-2xl bg-white p-1.5 shadow-md flex items-center justify-center border border-arba-100">
+                        <img src="logo sorotan.png" alt="Logo Al Arba" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Al-Arba';">
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-extrabold leading-tight tracking-wide text-white">Portal Guru & Pengajar</h1>
+                        <p class="text-xs text-arba-200 opacity-90 font-medium">Rumah Tahfidz Al Arba • Input Mutaba'ah & Absensi</p>
+                    </div>
+                </div>
+
+                <!-- IDENTITAS GURU & NAVIGASI -->
+                <div class="flex items-center space-x-3">
+                    <span id="user-display-name" class="hidden sm:inline-block text-xs bg-arba-800 px-3.5 py-2 rounded-xl border border-arba-700 text-arba-100 font-semibold">
+                        Memuat Pengajar...
+                    </span>
+                    <button onclick="goToInputRapor()" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs transition shadow-md flex items-center gap-1.5 border border-amber-500">
+                        <i class="fa-solid fa-file-signature"></i>
+                        <span class="hidden md:inline">Input Rapor</span>
+                    </button>
+                    <button onclick="handleLogout()" class="bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs transition shadow-md flex items-center gap-1.5">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Keluar</span>
+                    </button>
+                </div>
+
+            </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 w-full grid grid-cols-1 md:grid-cols-12 gap-6">
-        <!-- FORM INPUT MUTABAAH -->
-        <div class="md:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="font-extrabold text-sm text-slate-900 border-b pb-2">Input Setoran Hafalan Baru</h3>
-            <div id="alert-box" class="hidden p-2 text-xs rounded font-semibold bg-emerald-50 text-emerald-800"></div>
-            <form onsubmit="simpanMutabaah(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold mb-1">Tanggal</label>
-                    <input type="date" id="m-tgl" required class="w-full px-3 py-2 border rounded-xl">
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
+
+        <!-- TAB NAVIGATION SYSTEM -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="flex border-b border-slate-200 text-xs font-bold text-slate-600 overflow-x-auto">
+                <button onclick="switchTab('mutabaah')" id="tab-btn-mutabaah" class="px-6 py-4 border-b-2 border-arba-600 text-arba-700 bg-arba-50/50 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-plus-circle"></i> Input Mutaba'ah Setoran
+                </button>
+                <button onclick="switchTab('absen')" id="tab-btn-absen" class="px-6 py-4 border-b-2 border-transparent hover:text-arba-600 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-clipboard-user"></i> Absensi Presensi Harian
+                </button>
+                <button onclick="switchTab('santri')" id="tab-btn-santri" class="px-6 py-4 border-b-2 border-transparent hover:text-arba-600 flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-users"></i> Daftar Santri Terdaftar
+                </button>
+            </div>
+
+            <!-- TAB CONTENT 1: INPUT MUTABAAH -->
+            <div id="tab-content-mutabaah" class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    <!-- FORM INPUT SETORAN MUTABAAH -->
+                    <div class="lg:col-span-5 bg-slate-50 p-6 rounded-2xl border border-slate-200/80 space-y-4">
+                        <h3 class="font-extrabold text-arba-900 text-sm flex items-center gap-2 border-b pb-3 border-slate-200">
+                            <i class="fa-solid fa-pen-to-square text-arba-400"></i> Form Setoran Hafalan Baru
+                        </h3>
+
+                        <!-- ALERT NOTIFIKASI HASIL INPUT -->
+                        <div id="mutabaah-alert" class="hidden p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-semibold"></div>
+
+                        <form onsubmit="handleMutabaahSubmit(event)" class="space-y-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Setoran</label>
+                                <input type="date" id="m-tanggal" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-arba-400 focus:outline-none bg-white">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Santri</label>
+                                <select id="m-santri-select" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-arba-400 focus:outline-none bg-white font-semibold">
+                                    <option value="">-- Memuat Daftar Santri --</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Capaian (Juz / Surah / Halaman / Jilid)</label>
+                                <input type="text" id="m-capaian" placeholder="Contoh: Juz 30 - An-Naba: 1-20 / Iqro 4 Hal 12" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-arba-400 focus:outline-none bg-white">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Tingkat Kelancaran</label>
+                                <select id="m-kelancaran" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-arba-400 focus:outline-none bg-white">
+                                    <option value="Mumtaz (Lancar)">Mumtaz (Lancar)</option>
+                                    <option value="Jayyid (Cukup)">Jayyid (Cukup)</option>
+                                    <option value="Muraja'ah (Perlu Perbaikan)">Muraja'ah (Perlu Perbaikan)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Catatan Ustaz / Ustazah</label>
+                                <textarea id="m-catatan" rows="3" placeholder="Catatan tajwid, makhraj, adab, atau motivasi..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-arba-400 focus:outline-none bg-white"></textarea>
+                            </div>
+
+                            <button type="submit" id="btn-save-mutabaah" class="w-full bg-arba-800 hover:bg-arba-900 text-white font-bold py-3 rounded-xl text-xs transition shadow-md flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Simpan Setoran ke Sheet Mutabaah</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- LOG SETORAN MUTABAAH TERAKHIR -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-extrabold text-arba-900 text-sm">Log Mutaba'ah Terbaru di Database</h3>
+                            <button onclick="loadMutabaahLogs()" class="text-xs text-arba-600 font-bold hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-rotate"></i> Refresh Log
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+                                <thead class="bg-arba-900 text-white font-bold">
+                                    <tr>
+                                        <th class="p-3">Tanggal</th>
+                                        <th class="p-3">Nama Santri</th>
+                                        <th class="p-3">Capaian</th>
+                                        <th class="p-3">Kelancaran</th>
+                                        <th class="p-3">Catatan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="guru-mutabaah-body" class="divide-y divide-slate-100">
+                                    <tr>
+                                        <td colspan="5" class="p-4 text-center text-slate-400">Memuat log setoran terbaru...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
-                <div>
-                    <label class="block font-bold mb-1">Pilih Santri</label>
-                    <select id="m-santri" required class="w-full px-3 py-2 border rounded-xl">
-                        <option value="">-- Memuat Santri --</option>
-                    </select>
+            </div>
+<!-- TAB CONTENT 2: ABSENSI PRESIENSI -->
+            <div id="tab-content-absen" class="p-6 space-y-4 hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="font-extrabold text-arba-900 text-sm">Presensi Kehadiran Santri Harian</h3>
+                        <p class="text-xs text-slate-500">Pilih tanggal dan tentukan status presensi santri</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <input type="date" id="absen-date" class="px-3 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-arba-400 focus:outline-none">
+                        <button onclick="simpanPresensiSemua()" id="btn-save-absen" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-check-double"></i>
+                            <span>Simpan Absensi Hari Ini</span>
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold mb-1">Capaian Hafalan</label>
-                    <input type="text" id="m-capaian" placeholder="Contoh: Juz 30 / An-Naba 1-15" required class="w-full px-3 py-2 border rounded-xl">
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+                        <thead class="bg-slate-100 text-slate-700 font-bold">
+                            <tr>
+                                <th class="p-3 border">ID / NIS Santri</th>
+                                <th class="p-3 border">Nama Lengkap Santri</th>
+                                <th class="p-3 border">Kelompok Kelas</th>
+                                <th class="p-3 border text-center">Status Kehadiran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guru-absen-body" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="4" class="p-4 text-center text-slate-400">Memuat daftar santri presensi...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div>
-                    <label class="block font-bold mb-1">Kelancaran</label>
-                    <select id="m-kelancaran" class="w-full px-3 py-2 border rounded-xl">
-                        <option value="Mumtaz (Lancar)">Mumtaz (Lancar)</option>
-                        <option value="Jayyid (Cukup)">Jayyid (Cukup)</option>
-                        <option value="Muraja'ah">Muraja'ah</option>
-                    </select>
+            </div>
+
+            <!-- TAB CONTENT 3: DAFTAR SANTRI TERDAFTAR -->
+            <div id="tab-content-santri" class="p-6 space-y-4 hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="font-extrabold text-arba-900 text-sm">Daftar Santri Terdaftar di Database</h3>
+                        <p class="text-xs text-slate-500">Master data santri binaan Rumah Tahfidz Al Arba</p>
+                    </div>
+                    <div class="w-full sm:w-64">
+                        <input type="text" id="search-santri" onkeyup="filterSantri()" placeholder="Cari nama atau kelas..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-arba-400 focus:outline-none bg-slate-50">
+                    </div>
                 </div>
-                <div>
-                    <label class="block font-bold mb-1">Catatan</label>
-                    <textarea id="m-catatan" class="w-full px-3 py-2 border rounded-xl" rows="2"></textarea>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+                        <thead class="bg-arba-900 text-white font-bold">
+                            <tr>
+                                <th class="p-3">ID / NIS</th>
+                                <th class="p-3">Nama Santri</th>
+                                <th class="p-3">Kelas</th>
+                                <th class="p-3">Orang Tua / No. WA</th>
+                                <th class="p-3">Capaian Terakhir</th>
+                                <th class="p-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guru-santri-body" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="6" class="p-4 text-center text-slate-400">Memuat master data santri...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <button type="submit" id="btn-save" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl">Simpan Setoran</button>
-            </form>
+            </div>
+
         </div>
 
-        <!-- REKAP LOG -->
-        <div class="md:col-span-7 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-            <h3 class="font-extrabold text-sm text-slate-900 border-b pb-2">Log Setoran Terakhir</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs border">
-                    <thead class="bg-slate-800 text-white">
-                        <tr>
-                            <th class="p-2 border">Tanggal</th>
-                            <th class="p-2 border">Nama</th>
-                            <th class="p-2 border">Capaian</th>
-                            <th class="p-2 border">Kelancaran</th>
-                        </tr>
-                    </thead>
-                    <tbody id="guru-log-body">
-                        <tr><td colspan="4" class="p-3 text-center text-slate-400">Memuat log...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('m-tgl').valueAsDate = new Date();
-            google.script.run.withSuccessHandler(list => {
-                const sel = document.getElementById('m-santri');
-                sel.innerHTML = '<option value="">-- Pilih Santri --</option>';
-                list.forEach(s => sel.innerHTML += `<option value="${s.nama}">${s.nama} (${s.kelas})</option>`);
-            }).getSantriData('', 'Guru/Pengajar');
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            &copy; 2026 Rumah Tahfidz Al Arba. Integrated Google Sheets System.
+        </div>
+    </footer>
 
-            loadLogs();
+    <!-- CLIENT SCRIPT -->
+    <script>
+        let allSantriList = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Atur tanggal default ke hari ini
+            const today = new Date();
+            document.getElementById('m-tanggal').valueAsDate = today;
+            document.getElementById('absen-date').valueAsDate = today;
+
+            // Membaca sesi login pengguna dari sessionStorage
+            const sessionStr = sessionStorage.getItem('userSession');
+            if (sessionStr) {
+                const session = JSON.parse(sessionStr);
+                document.getElementById('user-display-name').innerText = `${session.nama} (Guru/Pengajar)`;
+            }
+
+            // Memuat data awal dari Apps Script backend
+            loadSantriList();
+            loadMutabaahLogs();
         });
 
-        function simpanMutabaah(e) {
+        // Memuat master data santri dari backend Google Apps Script
+        function loadSantriList() {
+            google.script.run.withSuccessHandler(data => {
+                allSantriList = data || [];
+                populateSantriDropdown();
+                renderSantriTable(allSantriList);
+                renderAbsenTable(allSantriList);
+            }).getSantriData('', 'Guru/Pengajar');
+        }
+
+        // Memasukkan daftar santri ke elemen select dropdown di Form Mutaba'ah
+        function populateSantriDropdown() {
+            const select = document.getElementById('m-santri-select');
+            select.innerHTML = '<option value="">-- Pilih Nama Santri --</option>';
+            allSantriList.forEach(s => {
+                select.innerHTML += `<option value="${s.nama}">${s.nama} (${s.kelas})</option>`;
+            });
+        }
+
+        // Menampilkan tabel master data santri
+        function renderSantriTable(list) {
+            const tbody = document.getElementById('guru-santri-body');
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tidak ada data santri ditemukan.</td></tr>`;
+                return;
+            }
+
+            list.forEach(s => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-mono text-slate-500 font-bold">${s.id}</td>
+                        <td class="p-3 font-bold text-arba-900">${s.nama}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 bg-arba-100 text-arba-800 rounded font-semibold">${s.kelas}</span></td>
+                        <td class="p-3">${s.ortu} <br><span class="text-slate-400 text-[10px] font-mono">${s.wa}</span></td>
+                        <td class="p-3 text-slate-700 font-medium">${s.capaian}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">${s.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Menampilkan tabel form absensi santri harian
+        function renderAbsenTable(list) {
+            const tbody = document.getElementById('guru-absen-body');
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada daftar santri untuk presensi.</td></tr>`;
+                return;
+            }
+
+            list.forEach(s => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 border font-mono text-slate-500 font-bold">${s.id}</td>
+                        <td class="p-3 border font-bold text-arba-900">${s.nama}</td>
+                        <td class="p-3 border">${s.kelas}</td>
+                        <td class="p-3 border text-center">
+                            <select id="absen-status-${s.id}" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-white font-semibold focus:ring-2 focus:ring-arba-400">
+                                <option value="Hadir" selected>Hadir</option>
+                                <option value="Izin">Izin</option>
+                                <option value="Sakit">Sakit</option>
+                                <option value="Alpa">Alpa</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Filter pencarian santri real-time
+        function filterSantri() {
+            const query = document.getElementById('search-santri').value.toLowerCase();
+            const filtered = allSantriList.filter(s => 
+                s.nama.toLowerCase().includes(query) || 
+                s.kelas.toLowerCase().includes(query) ||
+                String(s.id).toLowerCase().includes(query)
+            );
+            renderSantriTable(filtered);
+        }
+
+        // Menangani submit form mutaba'ah hafalan
+        function handleMutabaahSubmit(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-save');
-            btn.disabled = true;
-            btn.innerText = "Menyimpan...";
+            const btn = document.getElementById('btn-save-mutabaah');
+            const alertBox = document.getElementById('mutabaah-alert');
 
             const payload = {
-                tanggal: document.getElementById('m-tgl').value,
-                nama: document.getElementById('m-santri').value,
+                tanggal: document.getElementById('m-tanggal').value,
+                nama: document.getElementById('m-santri-select').value,
                 capaian: document.getElementById('m-capaian').value,
                 kelancaran: document.getElementById('m-kelancaran').value,
                 catatan: document.getElementById('m-catatan').value
             };
 
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke Sheet Mutabaah...';
+            alertBox.classList.add('hidden');
+
             google.script.run.withSuccessHandler(res => {
                 btn.disabled = false;
-                btn.innerText = "Simpan Setoran";
-                const box = document.getElementById('alert-box');
-                box.innerText = res.message;
-                box.classList.remove('hidden');
-                document.getElementById('m-capaian').value = '';
-                loadLogs();
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i><span>Simpan Setoran ke Sheet Mutabaah</span>';
+                
+                if (res.success) {
+                    alertBox.className = "p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-semibold block";
+                    alertBox.innerText = res.message;
+                    
+                    // Reset field input
+                    document.getElementById('m-capaian').value = '';
+                    document.getElementById('m-catatan').value = '';
+                    
+                    // Reload data log mutaba'ah dan master santri
+                    loadMutabaahLogs();
+                    loadSantriList();
+                } else {
+                    alertBox.className = "p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl font-semibold block";
+                    alertBox.innerText = "Gagal: " + res.message;
+                }
             }).saveMutabaah(payload);
         }
 
-        function loadLogs() {
+        // Memuat log setoran mutaba'ah terbaru dari backend
+        function loadMutabaahLogs() {
             google.script.run.withSuccessHandler(logs => {
-                const tbody = document.getElementById('guru-log-body');
+                const tbody = document.getElementById('guru-mutabaah-body');
                 tbody.innerHTML = '';
-                logs.slice(0, 10).forEach(l => {
-                    tbody.innerHTML += `<tr>
-                        <td class="p-2 border">${l.tanggal}</td>
-                        <td class="p-2 border font-bold">${l.nama}</td>
-                        <td class="p-2 border">${l.capaian}</td>
-                        <td class="p-2 border">${l.kelancaran}</td>
-                    </tr>`;
+
+                if (!logs || logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada log setoran di database.</td></tr>`;
+                    return;
+                }
+
+                logs.slice(0, 15).forEach(l => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-mono text-slate-500">${l.tanggal}</td>
+                            <td class="p-3 font-bold text-arba-900">${l.nama}</td>
+                            <td class="p-3 font-medium text-slate-800">${l.capaian}</td>
+                            <td class="p-3"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px]">${l.kelancaran}</span></td>
+                            <td class="p-3 text-slate-600 italic">${l.catatan}</td>
+                        </tr>
+                    `;
                 });
             }).getMutabaahLogs('', 'Guru/Pengajar');
         }
 
-        function goToRapor() {
-            let baseUrl = window.location.href.split('?')[0];
+        // Menyimpan data presensi masal ke sheet Presensi
+        function simpanPresensiSemua() {
+            const dateVal = document.getElementById('absen-date').value;
+            const btn = document.getElementById('btn-save-absen');
+            
+            if (allSantriList.length === 0) {
+                alert("Tidak ada data santri untuk disimpan!");
+                return;
+            }
+
+            let presensiPayload = [];
+
+            allSantriList.forEach(s => {
+                const val = document.getElementById(`absen-status-${s.id}`).value;
+                presensiPayload.push({
+                    tanggal: dateVal,
+                    id: s.id,
+                    nama: s.nama,
+                    kelas: s.kelas,
+                    keterangan: val
+                });
+            });
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan Presensi...';
+
+            google.script.run.withSuccessHandler(res => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i><span>Simpan Absensi Hari Ini</span>';
+                alert(res.message);
+            }).savePresensiMasal(presensiPayload);
+        }
+
+        // Kontrol navigasi sistem tab
+        function switchTab(tabName) {
+            document.getElementById('tab-content-mutabaah').classList.add('hidden');
+            document.getElementById('tab-content-absen').classList.add('hidden');
+            document.getElementById('tab-content-santri').classList.add('hidden');
+
+            const defaultStyle = "px-6 py-4 border-b-2 border-transparent hover:text-arba-600 flex items-center gap-2 whitespace-nowrap";
+            const activeStyle = "px-6 py-4 border-b-2 border-arba-600 text-arba-700 bg-arba-50/50 flex items-center gap-2 whitespace-nowrap";
+
+            document.getElementById('tab-btn-mutabaah').className = defaultStyle;
+            document.getElementById('tab-btn-absen').className = defaultStyle;
+            document.getElementById('tab-btn-santri').className = defaultStyle;
+
+            if (tabName === 'mutabaah') {
+                document.getElementById('tab-content-mutabaah').classList.remove('hidden');
+                document.getElementById('tab-btn-mutabaah').className = activeStyle;
+            } else if (tabName === 'absen') {
+                document.getElementById('tab-content-absen').classList.remove('hidden');
+                document.getElementById('tab-btn-absen').className = activeStyle;
+            } else if (tabName === 'santri') {
+                document.getElementById('tab-content-santri').classList.remove('hidden');
+                document.getElementById('tab-btn-santri').className = activeStyle;
+            }
+        }
+
+        // Navigasi ke Halaman Input Nilai Rapor (InputRapor)
+        function goToInputRapor() {
+            const baseUrl = "<?= webAppUrl ?>";
             window.location.href = baseUrl + "?page=InputRapor";
         }
 
+        // Fungsi Logout
         function handleLogout() {
             sessionStorage.removeItem('userSession');
-            let baseUrl = window.location.href.split('?')[0];
+            const baseUrl = "<?= webAppUrl ?>";
             window.location.href = baseUrl + "?page=Homepage";
         }
     </script>
