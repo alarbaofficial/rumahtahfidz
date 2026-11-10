@@ -381,7 +381,7 @@
             document.getElementById('login-alert').classList.add('hidden');
         }
 
-        function handleLoginSubmit(e) {
+        async function handleLoginSubmit(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-login-submit');
             const alertBox = document.getElementById('login-alert');
@@ -395,7 +395,14 @@
                 alertBox.innerText = "Silakan pilih Peran Akses (Role) Anda terlebih dahulu.";
                 return;
             }
+// Pemasangan Link URL Web App di index.html Vercel
+const scriptUrl = "https://script.google.com/macros/s/AKfycbwSr3c1A9B4PP7KxWSle_D_qL_NZdkSxm_PWOB8CG4YG53a5IpUdZlFtpDvy-cPjmArNA/exec";
 
+fetch(scriptUrl + "?action=login&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&role=" + encodeURIComponent(role))
+  .then(response => response.json())
+  .then(res => {
+     // Proses respon login...
+  });
             // Ubah tombol ke status loading
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
@@ -442,6 +449,8 @@
                 })
                 .processLogin(username, password, role);
         }
+        
     </script>
+    
 </body>
 </html>
