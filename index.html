@@ -451,6 +451,133 @@ fetch(scriptUrl + "?action=login&username=" + encodeURIComponent(username) + "&p
         }
         
     </script>
-    
+    <!-- SCRIPT LOGIN KHUSUS APPS SCRIPT WEB APP -->
+<script>
+    function openLoginModal() {
+        document.getElementById('login-modal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('login-alert').classList.add('hidden');
+    }
+
+    function handleLoginSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-login-submit');
+        const alertBox = document.getElementById('login-alert');
+
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const role = document.getElementById('login-role').value;
+
+        if (!role) {
+            alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+            alertBox.innerText = "Silakan pilih Peran Akses (Role) Anda terlebih dahulu.";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
+        alertBox.classList.add('hidden');
+
+        const loginTimeout = setTimeout(() => {
+            if (btn.disabled) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                alertBox.innerText = "Koneksi lambat atau waktu habis. Silakan coba klik tombol lagi.";
+            }
+        }, 12000);
+
+        google.script.run
+            .withSuccessHandler(res => {
+                clearTimeout(loginTimeout);
+                if (res.success) {
+                    sessionStorage.setItem('userSession', JSON.stringify(res.user));
+                    let baseUrl = window.location.href.split('?')[0];
+                    const targetUrl = baseUrl + "?page=" + res.targetPage + "&u=" + encodeURIComponent(res.user.relasiId || '');
+                    window.top.location.href = targetUrl;
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                    alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                    alertBox.innerText = res.message;
+                }
+            })
+            .withFailureHandler(err => {
+                clearTimeout(loginTimeout);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                alertBox.innerText = "Gagal terhubung ke server: " + (err.message || err);
+            })
+            .processLogin(username, password, role);
+    }
+</script>
+<!-- SCRIPT LOGIN KHUSUS APPS SCRIPT WEB APP -->
+<script>
+    function openLoginModal() {
+        document.getElementById('login-modal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('login-alert').classList.add('hidden');
+    }
+
+    function handleLoginSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-login-submit');
+        const alertBox = document.getElementById('login-alert');
+
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const role = document.getElementById('login-role').value;
+
+        if (!role) {
+            alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+            alertBox.innerText = "Silakan pilih Peran Akses (Role) Anda terlebih dahulu.";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
+        alertBox.classList.add('hidden');
+
+        const loginTimeout = setTimeout(() => {
+            if (btn.disabled) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                alertBox.innerText = "Koneksi lambat atau waktu habis. Silakan coba klik tombol lagi.";
+            }
+        }, 12000);
+
+        google.script.run
+            .withSuccessHandler(res => {
+                clearTimeout(loginTimeout);
+                if (res.success) {
+                    sessionStorage.setItem('userSession', JSON.stringify(res.user));
+                    let baseUrl = window.location.href.split('?')[0];
+                    const targetUrl = baseUrl + "?page=" + res.targetPage + "&u=" + encodeURIComponent(res.user.relasiId || '');
+                    window.top.location.href = targetUrl;
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                    alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                    alertBox.innerText = res.message;
+                }
+            })
+            .withFailureHandler(err => {
+                clearTimeout(loginTimeout);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> <span>Masuk Ke Sistem</span>';
+                alertBox.className = "p-3 mb-4 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-800 block";
+                alertBox.innerText = "Gagal terhubung ke server: " + (err.message || err);
+            })
+            .processLogin(username, password, role);
+    }
+</script>
 </body>
 </html>
